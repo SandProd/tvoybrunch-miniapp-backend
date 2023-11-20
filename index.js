@@ -1,7 +1,7 @@
 const TelegramBot = require('node-telegram-bot-api');
 
 const token = '6835736852:AAGJL4zqg5Qd8aE7Di2zaXm5ccuZE9RNa5Y';
-const webAppUrl = 'https://www.google.com/';
+const webAppUrl = 'https://roaring-gaufre-d107c3.netlify.app/';
 const bot = new TelegramBot(token, {polling:true});
 
 bot.on('message', async (msg) => {

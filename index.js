@@ -3,7 +3,7 @@ const express = require('express');
 const cors = require('cors');
 
 const token = '6835736852:AAGJL4zqg5Qd8aE7Di2zaXm5ccuZE9RNa5Y';
-const webAppUrl = 'https://stellular-pasca-1f258c.netlify.app/';
+const webAppUrl = 'https://rococo-lily-4bd96e.netlify.app';
 
 const bot = new TelegramBot(token, {polling: true});
 const app = express();
@@ -39,7 +39,7 @@ bot.on('message', async (msg) => {
             const data = JSON.parse(msg?.web_app_data?.data)
             console.log(data)
             await bot.sendMessage(chatId, 'Спасибо за обратную связь!')
-            await bot.sendMessage(chatId, 'Ваша страна: ' + data?.country);
+            await bot.sendMessage(chatId, 'Ваш номер дома: ' + data?.country);
             await bot.sendMessage(chatId, 'Ваша улица: ' + data?.street);
 
             setTimeout(async () => {
@@ -64,6 +64,9 @@ app.post('/web-data', async (req, res) => {
         })
         return res.status(200).json({});
     } catch (e) {
+        input_message_content: {
+            message_text: ` Не удалось произвести покупку, вы пытались приобрели товар на сумму ${totalPrice}, ${products.map(item => item.title).join(', ')}`
+        }
         return res.status(500).json({})
     }
 })

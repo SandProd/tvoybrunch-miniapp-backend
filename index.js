@@ -51,6 +51,16 @@ bot.on('message', async (msg) => {
     }
 });
 
+app.get('/', (req, res) => {
+    res.send('Fast response 🔥🔥🔥')
+})
+
+app.ws('/echo', (ws, req) => {
+    ws.on('message', (msg) => {
+        ws.send(msg);
+    })
+})
+
 app.post('/web-data', async (req, res) => {
     const {queryId, products = [], totalPrice} = req.body;
     try {

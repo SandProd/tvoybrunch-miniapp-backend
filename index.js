@@ -63,7 +63,8 @@ app.post('/web-data', async (req, res) => {
             }
         })
         return res.status(200).json({});
-    } catch (e) {
+    } 
+    catch (e) {
         input_message_content: {
             message_text: ` Не удалось произвести покупку, вы пытались приобрели товар на сумму ${totalPrice}, ${products.map(item => item.title).join(', ')}`
         }
@@ -71,6 +72,6 @@ app.post('/web-data', async (req, res) => {
     }
 })
 
-const PORT = 8000;
+const PORT = process.env.PORT || 8000;
 
 app.listen(PORT, () => console.log('server started on PORT ' + PORT))

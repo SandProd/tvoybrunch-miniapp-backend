@@ -7,7 +7,7 @@ const webAppUrl = 'https://rococo-lily-4bd96e.netlify.app';
 
 const bot = new TelegramBot(token, {polling: true});
 const app = express();
-
+app.use(express.static('public'));
 app.use(express.json());
 app.use(cors());
 

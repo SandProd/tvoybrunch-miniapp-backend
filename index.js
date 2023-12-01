@@ -5,6 +5,9 @@ const cors = require('cors');
 const token = '6835736852:AAGJL4zqg5Qd8aE7Di2zaXm5ccuZE9RNa5Y';
 const webAppUrl = 'https://rococo-lily-4bd96e.netlify.app';
 
+const PORT = process.env.PORT;
+const HOSTNAME = process.env.HOSTNAME; 
+
 const bot = new TelegramBot(token, {polling: true});
 const app = express();
 app.use(express.static('public'));
@@ -83,7 +86,5 @@ app.post('/web-data', async (req, res) => {
         return res.status(500).json({})
     }
 })
-
-const PORT = process.env.PORT || 8000;
 
 app.listen(PORT, () => console.log('server started on PORT ' + PORT))

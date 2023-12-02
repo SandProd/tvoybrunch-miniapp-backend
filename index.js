@@ -1,3 +1,8 @@
+const HTTP = require('http');
+const WebServer = HTTP.createServer();
+
+WebServer.listen(process.env.PORT, process.env.HOSTNAME)
+// WebServer.listen(3000, '127.1.1.141')
 const TelegramBot = require("node-telegram-bot-api");
 const express = require('express');
 const cors = require('cors');
@@ -40,7 +45,7 @@ bot.on('message', async (msg) => {
     if(msg?.web_app_data?.data) {
         try {
             const data = JSON.parse(msg?.web_app_data?.data)
-            console.log(data)
+            // console.log(data)
             await bot.sendMessage(chatId, 'Спасибо за обратную связь!')
             await bot.sendMessage(chatId, 'Ваш номер дома: ' + data?.country);
             await bot.sendMessage(chatId, 'Ваша улица: ' + data?.street);
@@ -87,4 +92,6 @@ app.post('/web-data', async (req, res) => {
     }
 })
 
-app.listen(PORT, () => console.log('server started on PORT ' + PORT))
+app.listen(
+    PORT, () => console.log('server started on PORT ' + PORT),
+    HOSTNAME, () => console.log('server started on HOSTNAME ' + HOSTNAME))

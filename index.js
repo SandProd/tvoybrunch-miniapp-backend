@@ -78,4 +78,4 @@ app.post('/web-data', async (req, res) => {
 
 app.listen(
     PORT, () => console.log('server started on PORT ' + PORT),
-    HOSTNAME, () => console.log('server started on HOSTNAME ' + HOSTNAME))
+    HOSTNAME, () => console.log('server started on HOSTNAME ' + HOSTNAME))  

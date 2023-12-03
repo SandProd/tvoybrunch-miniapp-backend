@@ -1,8 +1,4 @@
 const HTTP = require('http');
-const WebServer = HTTP.createServer();
-
-WebServer.listen(process.env.PORT, process.env.HOSTNAME)
-// WebServer.listen(3000, '127.1.1.141')
 const TelegramBot = require("node-telegram-bot-api");
 const express = require('express');
 const cors = require('cors');
@@ -10,8 +6,8 @@ const cors = require('cors');
 const token = '6835736852:AAGJL4zqg5Qd8aE7Di2zaXm5ccuZE9RNa5Y';
 const webAppUrl = 'https://rococo-lily-4bd96e.netlify.app';
 
-const PORT = process.env.PORT;
-const HOSTNAME = process.env.HOSTNAME; 
+const PORT = '3000';
+const HOSTNAME = '127.1.1.141'; 
 
 const bot = new TelegramBot(token, {polling: true});
 const app = express();
@@ -58,18 +54,6 @@ bot.on('message', async (msg) => {
         }
     }
 });
-
-/*
-app.get('/', (req, res) => {
-    res.send('Fast response 🔥🔥🔥')
-})
-
-app.ws('/echo', (ws, req) => {
-    ws.on('message', (msg) => {
-        ws.send(msg);
-    })
-})
-*/
 
 app.post('/web-data', async (req, res) => {
     const {queryId, products = [], totalPrice} = req.body;

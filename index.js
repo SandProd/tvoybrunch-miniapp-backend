@@ -33,6 +33,7 @@ bot.on('message', async (msg) => {
             reply_markup: {
                 inline_keyboard: [
                     [{text: '🍱 Меню', web_app: {url: webAppUrl}}],
+                    [{text: '🎟️ Акции', web_app: {url: webAppUrl + '/discounts'}}],
                     [{text: '👤 Профиль', web_app: {url: webAppUrl + '/profile'}}],
                     [{text: '📱 Контакты', web_app: {url: webAppUrl + '/contacts'}}]
                 ]
@@ -43,7 +44,7 @@ bot.on('message', async (msg) => {
     if(msg?.web_app_data?.data) {
         try {
             const data = JSON.parse(msg?.web_app_data?.data)
-            // console.log(data)
+            console.log(data)
             await bot.sendMessage(chatId, 'Спасибо за обратную связь!')
             await bot.sendMessage(chatId, 'Ваш номер дома: ' + data?.country);
             await bot.sendMessage(chatId, 'Ваша улица: ' + data?.street);

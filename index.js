@@ -9,40 +9,21 @@ const webAppUrl = 'https://rococo-lily-4bd96e.netlify.app';
 const PORT = '3000';
 const HOSTNAME = '127.1.1.141'; 
 
-const connection = mysql.createConnection({
-    host:'tvoybruc.mysql.tools',
-    user:'tvoybruc_db',
-    password:'wjtMG2Wc',
-    database: 'tvoybruc_db'
-})
-
-connection.connect(function(err) {
-    if (err) throw err;
-    console.log("Connected!");
-    const sql = "SELECT * FROM Orders";
-    connection.query(sql, function (err, result) {
-      if (err) throw err;
-      console.log("Result: ");
-      console.log(result);
-    });
-  });
-
-
-
-
-
-
-
-
-
-
-
 
 const bot = new TelegramBot(token, {polling: true});
 const app = express();
 app.use(express.static('public'));
 app.use(express.json());
 app.use(cors());
+
+
+let Username;
+
+bot.on('message', (message) => {
+  const username = message.chat.first_name;
+  console.log(`User ${username} is interacting with the bot.`);
+  globalUsername = username;
+});
 
 bot.on('message', async (msg) => {
     console.log('Server started')
@@ -87,9 +68,38 @@ bot.on('message', async (msg) => {
     }
 });
 
+
+
+
+const connection = mysql.createConnection({
+    host:'tvoybruc.mysql.tools',
+    user:'tvoybruc_db',
+    password:'wjtMG2Wc',
+    database: 'tvoybruc_db'
+})
+
+connection.connect(function(err) {
+    if (err) throw err;
+    console.log("Connected!");
+    const sql = "SELECT * FROM Orders";
+    connection.query(sql, function (err, result) {
+      if (err) throw err;
+      console.log("Result: ");
+      console.log(result);
+    });
+  });
+
+
+
 app.post('/web-data', async (req, res) => {
     const {queryId, products = [], totalPrice} = req.body;
     try {
+        var sql = `INSERT INTO Orders (username, userorder, TotalPrice) VALUES ('${Username}', '${products.map(item => item.title).join(', ')}', ${totalPrice})`
+        connection.query(sql,function(err,result){
+            if (err) throw err;
+            console.log("1 record inserted")
+        })
+
         await bot.answerWebAppQuery(queryId, {
             type: 'article',
             id: queryId,

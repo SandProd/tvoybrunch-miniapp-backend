@@ -4,7 +4,7 @@ const express = require('express');
 const cors = require('cors');
 const geolib = require('geolib');
 
-const token = 'YOUR_TELEGRAM_BOT_TOKEN';
+const token = '6835736852:AAGJL4zqg5Qd8aE7Di2zaXm5ccuZE9RNa5Y';
 const webAppUrl = 'https://rococo-lily-4bd96e.netlify.app';
 
 const PORT = '3000';
@@ -20,7 +20,7 @@ async function getCoordinates(address) {
     try {
         const response = await new Promise((resolve, reject) => {
         // Замените YOUR_OPENCAGE_API_KEY на ваш ключ API от OpenCage
-        const apiKey = 'YOUR_OPENCAGE_API_KEY';
+        const apiKey = '6e45de604e034cbb9eca79a3a0e25612я';
         const url = `https://api.opencagedata.com/geocode/v1/json?q=${encodeURIComponent(address)}&key=${apiKey}`;
     HTTP.get(url, (res) => {
         let data = '';
@@ -43,7 +43,7 @@ async function getCoordinates(address) {
     }
 }
 
-async function calculateDistance(address1, address2) {
+async function calculateDistance(address1 = "Минск, ул.Пономаренко 43 Б", address2) {
     try {
         const coordinates1 = await getCoordinates(address1);
         const coordinates2 = await getCoordinates(address2);

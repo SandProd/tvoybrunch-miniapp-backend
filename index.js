@@ -2,12 +2,42 @@ const HTTP = require('http');
 const TelegramBot = require("node-telegram-bot-api");
 const express = require('express');
 const cors = require('cors');
-
+const mysql = require('mysql')
 const token = '6835736852:AAGJL4zqg5Qd8aE7Di2zaXm5ccuZE9RNa5Y';
 const webAppUrl = 'https://rococo-lily-4bd96e.netlify.app';
 
 const PORT = '3000';
 const HOSTNAME = '127.1.1.141'; 
+
+const connection = mysql.createConnection({
+    host:'tvoybruc.mysql.tools',
+    user:'tvoybruc_db',
+    password:'wjtMG2Wc',
+    database: 'tvoybruc_db'
+})
+
+con.connect(function(err) {
+    if (err) throw err;
+    console.log("Connected!");
+    con.query(sql, function (err, result) {
+      if (err) throw err;
+      console.log("Result: " + result);
+    });
+  });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 const bot = new TelegramBot(token, {polling: true});
 const app = express();

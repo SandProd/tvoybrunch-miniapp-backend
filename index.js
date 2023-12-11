@@ -16,17 +16,16 @@ const connection = mysql.createConnection({
     database: 'tvoybruc_db'
 })
 
-con.connect(function(err) {
+connection.connect(function(err) {
     if (err) throw err;
     console.log("Connected!");
-    con.query(sql, function (err, result) {
+    const sql = "SELECT * FROM Orders";
+    connection.query(sql, function (err, result) {
       if (err) throw err;
-      console.log("Result: " + result);
+      console.log("Result: ");
+      console.log(result);
     });
   });
-
-
-
 
 
 

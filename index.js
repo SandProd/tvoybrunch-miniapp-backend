@@ -92,7 +92,7 @@ connection.connect((err) => {
 app.post('/web-data', async (req, res) => {
     const { queryId, products = [], totalPrice } = req.body;
     try {
-        const sql = `INSERT INTO Orders (username, userorder, TotalPrice) VALUES ('${Username}', '${products.map(item => item.title).join(', ')}', ${totalPrice})`;
+        const sql = `INSERT INTO Orders (userorder, TotalPrice) VALUES ('', '${products.map(item => item.title).join(', ')}', ${totalPrice})`;
         connection.query(sql, (err, result) => {
             if (err) throw err;
             console.log("1 record inserted");

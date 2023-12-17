@@ -2,7 +2,8 @@ const http = require('http');
 const TelegramBot = require("node-telegram-bot-api");
 const express = require('express');
 const cors = require('cors');
-const mysql = require('mysql');
+const db = require('./db');
+const productsRouter = require('./routes/products');
 
 const token = '6835736852:AAGJL4zqg5Qd8aE7Di2zaXm5ccuZE9RNa5Y';
 const webAppUrl = 'https://rococo-lily-4bd96e.netlify.app';
@@ -69,30 +70,20 @@ bot.on('message', async (msg) => {
 });
 
 // Database connection
-const connection = mysql.createConnection({
-    host: 'tvoybruc.mysql.tools',
-    user: 'tvoybruc_db',
-    password: 'wjtMG2Wc',
-    database: 'tvoybruc_db'
-});
-
-connection.connect((err) => {
+dbConnection.connect((err) => {
     if (err) throw err;
     console.log("Connected!");
-    const sql = "SELECT * FROM Orders";
-    connection.query(sql, (err, result) => {
-        if (err) throw err;
-        console.log("Result: ");
-        console.log(result);
-    });
 });
+
+// Подключение маршрутов из файла products.js
+app.use('/products', productsRouter);
 
 // Server route
 app.post('/web-data', async (req, res) => {
     const { queryId, products = [], totalPrice } = req.body;
     try {
         const sql = `INSERT INTO Orders (username, userorder, TotalPrice) VALUES ('${Username}', '${products.map(item => item.title).join(', ')}', ${totalPrice})`;
-        connection.query(sql, (err, result) => {
+        dbConnection.query(sql, (err, result) => {
             if (err) throw err;
             console.log("1 record inserted");
         });
@@ -113,99 +104,6 @@ app.post('/web-data', async (req, res) => {
     }
 });
 
-// Добавление нового продукта
-app.post('/products', (req, res) => {
-    const { name, price } = req.body;
-    const sql = 'INSERT INTO Products (name, price) VALUES (?, ?)';
-  
-    connection.query(sql, [name, price], (err, result) => {
-        if (err) {
-            console.error('Ошибка запроса к базе данных: ' + err.message);
-            res.status(500).json({ error: 'Internal Server Error' });
-            return;
-        }
-
-        res.status(201).json({ message: 'Продукт успешно добавлен' });
-    });
-});
-
-// Получение всех продуктов
-app.get('/products', (req, res) => {
-    const sql = 'SELECT * FROM Products';
-  
-    connection.query(sql, (err, results) => {
-        if (err) {
-            console.error('Ошибка запроса к базе данных: ' + err.message);
-            res.status(500).json({ error: 'Internal Server Error' });
-            return;
-        }
-
-        res.json(results);
-    });
-});
-
-// Получение конкретного продукта по Id
-app.get('/products/:id', (req, res) => {
-    const productId = req.params.id;
-    const sql = 'SELECT * FROM Products WHERE Id = ?';
-  
-    connection.query(sql, [productId], (err, result) => {
-        if (err) {
-            console.error('Ошибка запроса к базе данных: ' + err.message);
-            res.status(500).json({ error: 'Internal Server Error' });
-            return;
-        }
-
-        if (result.length === 0) {
-            res.status(404).json({ error: 'Продукт не найден' });
-        } else {
-            res.json(result[0]);
-        }
-    });
-});
-
-// Обновление продукта по Id
-app.put('/products/:id', (req, res) => {
-    const productId = req.params.id;
-    const { name, price } = req.body;
-    const sql = 'UPDATE Products SET name = ?, price = ? WHERE Id = ?';
-  
-    connection.query(sql, [name, price, productId], (err, result) => {
-        if (err) {
-            console.error('Ошибка запроса к базе данных: ' + err.message);
-            res.status(500).json({ error: 'Internal Server Error' });
-            return;
-        }
-
-        if (result.affectedRows === 0) {
-            res.status(404).json({ error: 'Продукт не найден' });
-        } else {
-            res.json({ message: 'Продукт успешно обновлен' });
-        }
-    });
-});
-
-// Удаление продукта по Id
-app.delete('/products/:id', (req, res) => {
-    const productId = req.params.id;
-    const sql = 'DELETE FROM Products WHERE Id = ?';
-  
-    connection.query(sql, [productId], (err, result) => {
-        if (err) {
-            console.error('Ошибка запроса к базе данных: ' + err.message);
-            res.status(500).json({ error: 'Internal Server Error' });
-            return;
-        }
-
-        if (result.affectedRows === 0) {
-            res.status(404).json({ error: 'Продукт не найден' });
-        } else {
-            res.json({ message: 'Продукт успешно удален' });
-        }
-    });
-});
-
-// Server listening
 app.listen(PORT, HOSTNAME, () => {
     console.log(`Server started on ${HOSTNAME}:${PORT}`);
 });

@@ -70,7 +70,7 @@ bot.on('message', async (msg) => {
 });
 
 // Database connection
-dbConnection.connect((err) => {
+db.connect((err) => {
     if (err) throw err;
     console.log("Connected!");
 });
@@ -83,7 +83,7 @@ app.post('/web-data', async (req, res) => {
     const { queryId, products = [], totalPrice } = req.body;
     try {
         const sql = `INSERT INTO Orders (username, userorder, TotalPrice) VALUES ('${Username}', '${products.map(item => item.title).join(', ')}', ${totalPrice})`;
-        dbConnection.query(sql, (err, result) => {
+        db.query(sql, (err, result) => {
             if (err) throw err;
             console.log("1 record inserted");
         });

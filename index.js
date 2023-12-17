@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const db = require('./db');
 const productsRouter = require('./routes/products');
-const bot = require('./telegramBot'); // Importing the Telegram bot instance
+const { bot, Username } = require('./telegramBot');
 const webDataRouter = require('./routes/webData');
 
 const PORT = '3000';
@@ -12,9 +12,6 @@ const app = express();
 app.use(express.static('public'));
 app.use(express.json());
 app.use(cors());
-
-// Bot middleware for integration with Telegram bot
-app.use(bot.middleware());
 
 // Database connection
 db.connect((err) => {

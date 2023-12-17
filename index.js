@@ -1,14 +1,15 @@
+require('dotenv').config();
+
 const http = require('http');
 const TelegramBot = require("node-telegram-bot-api");
 const express = require('express');
 const cors = require('cors');
 const mysql = require('mysql');
 
-const token = '6835736852:AAGJL4zqg5Qd8aE7Di2zaXm5ccuZE9RNa5Y';
-const webAppUrl = 'https://rococo-lily-4bd96e.netlify.app';
-
-const PORT = '3000';
-const HOSTNAME = '127.1.1.141';
+const token = process.env.TELEGRAM_BOT_TOKEN;
+const webAppUrl = process.env.WEB_APP_URL;
+const PORT = process.env.PORT || 3000;
+const HOSTNAME = process.env.HOSTNAME || '127.1.1.141'; 
 
 const bot = new TelegramBot(token, { polling: true });
 const app = express();
@@ -70,10 +71,10 @@ bot.on('message', async (msg) => {
 
 // Database connection
 const connection = mysql.createConnection({
-    host: 'tvoybruc.mysql.tools',
-    user: 'tvoybruc_db',
-    password: 'wjtMG2Wc',
-    database: 'tvoybruc_db'
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_DATABASE
 });
 
 connection.connect((err) => {

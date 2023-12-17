@@ -4,10 +4,10 @@ const express = require('express');
 const cors = require('cors');
 const mysql = require('mysql');
 
-const token = '6835736852:AAGJL4zqg5Qd8aE7Di2zaXm5ccuZE9RNa5Y';
+const token = 'YOUR_TELEGRAM_BOT_TOKEN';
 const webAppUrl = 'https://rococo-lily-4bd96e.netlify.app';
 
-const PORT = '3000';
+const PORT = 3000;
 const HOSTNAME = '127.1.1.141';
 
 const bot = new TelegramBot(token, { polling: true });
@@ -54,13 +54,18 @@ bot.on('message', async (msg) => {
         try {
             const data = JSON.parse(msg?.web_app_data?.data);
             console.log(data);
+
+            // Сохраняем данные о доставке и заказе в базе данных
+            saveUserDataToDB(Username, data, msg.body.products, msg.body.totalPrice);
+
+            // Отправка сообщений в Телеграм
             await bot.sendMessage(chatId, 'Спасибо за обратную связь!');
             await bot.sendMessage(chatId, 'Ваш номер дома: ' + data?.country);
             await bot.sendMessage(chatId, 'Ваша улица: ' + data?.street);
-            await bot.sendMessage(chatId, 'Bаш район:' + data?.district);
+            await bot.sendMessage(chatId, 'Ваш район:' + data?.district);
 
             setTimeout(async () => {
-                await bot.sendMessage(chatId, 'Всю информацию вы получите в этом чате');
+                await bot.sendMessage(chatId, 'Вся информация будет отправлена в этот чат');
             }, 3000);
         } catch (e) {
             console.log(e);
@@ -79,24 +84,32 @@ const connection = mysql.createConnection({
 connection.connect((err) => {
     if (err) throw err;
     console.log("Connected!");
-    const sql = "SELECT * FROM Orders";
+});
+
+// Функция для сохранения данных о доставке и заказе в базе данных MySQL
+function saveUserDataToDB(username, data, products, totalPrice) {
+    const { country, street, district } = data;
+    const userOrder = products.map(item => item.title).join(', ');
+
+    const sql = `
+        INSERT INTO Orders (username, userorder, TotalPrice, country, street, district)
+        VALUES ('${username}', '${userOrder}', ${totalPrice}, '${country}', '${street}', '${district}')
+    `;
+
     connection.query(sql, (err, result) => {
         if (err) throw err;
-        console.log("Result: ");
-        console.log(result);
+        console.log("User data and order data inserted into the database");
     });
-});
+}
 
 // Server route
 app.post('/web-data', async (req, res) => {
     const { queryId, products = [], totalPrice } = req.body;
     try {
-        const sql = `INSERT INTO Orders (username, userorder, TotalPrice) VALUES ('${Username}', '${products.map(item => item.title).join(', ')}', ${totalPrice})`;
-        connection.query(sql, (err, result) => {
-            if (err) throw err;
-            console.log("1 record inserted");
-        });
+        // Отправка данных о заказе в базу данных
+        saveUserDataToDB(Username, req.body.data, products, totalPrice);
 
+        // Отправка сообщений в Телеграм
         await bot.answerWebAppQuery(queryId, {
             type: 'article',
             id: queryId,
@@ -112,20 +125,6 @@ app.post('/web-data', async (req, res) => {
         return res.status(500).json({});
     }
 });
-
-app.get('/products', (req, res) => {
-    const sql = 'SELECT * FROM Products';
-  
-    connection.query(sql, (err, results) => {
-      if (err) {
-        console.error('Ошибка запроса к базе данных: ' + err.message);
-        res.status(500).json({ error: 'Internal Server Error' });
-        return;
-      }
-  
-      res.json(results);
-    });
-  });
 
 // Server listening
 app.listen(PORT, HOSTNAME, () => {

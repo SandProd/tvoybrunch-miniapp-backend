@@ -14,7 +14,8 @@ const app = express(); // Создание экземпляра приложен
 app.use(express.static('public')); // Использование статических файлов из папки 'public'
 app.use(express.json()); // Использование middleware для обработки JSON-запросов
 app.use(cors()); // Использование middleware для обработки CORS
-app.use(bot); // Использование middleware для интеграции с Telegram ботом
+
+app.use(bot.middleware()); // Использование middleware для интеграции с Telegram ботом
 
 // Установка соединения с базой данных при запуске сервера
 db.connect((err) => { 

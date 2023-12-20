@@ -5,7 +5,6 @@ const webAppUrl = 'https://rococo-lily-4bd96e.netlify.app';
 
 const bot = new TelegramBot(token, { polling: true });
 
-
 bot.on('message', async (msg) => {
     const chatId = msg.chat.id;
     const text = msg.text;
@@ -38,10 +37,11 @@ bot.on('message', async (msg) => {
             await bot.sendMessage(chatId, 'Спасибо за обратную связь!');
             await bot.sendMessage(chatId, 'Ваш номер дома: ' + data?.country);
             await bot.sendMessage(chatId, 'Ваша улица: ' + data?.street);
-            await bot.sendMessage(chatId, 'Bаш район:' + data?.district);
+            await bot.sendMessage(chatId, 'Ваш район:' + data?.district);
+            await bot.sendMessage(chatId, 'Ваш юзернейм:' + data?.username);
 
             setTimeout(async () => {
-                await bot.sendMessage(chatId, 'Всю информацию вы получите в этом чате');
+                await bot.sendMessage(chatId, 'Вся информация будет отправлена в этот чат');
             }, 3000);
         } catch (e) {
             console.log(e);

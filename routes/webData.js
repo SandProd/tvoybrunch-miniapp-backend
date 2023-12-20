@@ -7,7 +7,7 @@ const router = express.Router();
 router.post('/', async (req, res) => {
     const { queryId, products = [], totalPrice } = req.body;
     try {
-        const sql = `INSERT INTO Orders (username, userorder, TotalPrice) VALUES ('${bot.Username}', '${products.map(item => item.title).join(', ')}', ${totalPrice})`;
+        const sql = `INSERT INTO Orders (userorder, TotalPrice) VALUES ('${products.map(item => item.title).join(', ')}', ${totalPrice})`;
         db.query(sql, (err, result) => {
             if (err) throw err;
             console.log("1 record inserted");

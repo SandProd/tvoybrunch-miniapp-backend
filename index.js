@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const db = require('./db');
 const productsRouter = require('./routes/products');
-const { bot, Username } = require('./telegramBot');
+const { bot } = require('./telegramBot');
 const webDataRouter = require('./routes/webData');
 
 const PORT = '3000';

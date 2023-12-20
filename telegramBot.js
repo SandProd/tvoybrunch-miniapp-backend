@@ -5,14 +5,6 @@ const webAppUrl = 'https://rococo-lily-4bd96e.netlify.app';
 
 const bot = new TelegramBot(token, { polling: true });
 
-let Username;
-
-// Bot event handling
-bot.on('message', (message) => {
-    const username = message.chat.first_name;
-    console.log(`User ${username} is interacting with the bot.`);
-    Username = username;
-});
 
 bot.on('message', async (msg) => {
     const chatId = msg.chat.id;
@@ -57,4 +49,4 @@ bot.on('message', async (msg) => {
     }
 });
 
-module.exports = { bot, Username };
+module.exports = { bot };

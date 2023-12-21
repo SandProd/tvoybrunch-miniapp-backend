@@ -1,19 +1,27 @@
 const express = require('express');
 const db = require('../db');
-const { bot }  = require('../telegramBot');
+const { bot } = require('../telegramBot');
+const nodemailer = require('nodemailer');
 
 const router = express.Router();
+
+// Создайте объект транспорта для отправки писем
+const transporter = nodemailer.createTransport({
+    host: 'mail.adm.tools',
+    port: 25,  // Используйте порт 25 для SMTP
+    secure: false,  // Установите в false, так как это порт без SSL
+    auth: {
+        user: 'orders@tvoybranch-backend.space', // Ваш электронный адрес
+        pass: 'u55G3f5iCE' // Ваш пароль от электронной почты
+    }
+});
 
 router.post('/', async (req, res) => {
     const { queryId, products = [], totalPrice, user } = req.body;
 
     try {
         const productsString = products.map(item => item.title).join(', ');
-
-        // Assuming user is an object with a username property
         const username = user ? user.username : 'Unknown User';
-
-        // Fetch user's address from the Users table
         const fetchAddressQuery = `SELECT address FROM Users WHERE username = '${username}'`;
 
         db.query(fetchAddressQuery, async (err, addressResult) => {
@@ -22,7 +30,6 @@ router.post('/', async (req, res) => {
             if (addressResult.length > 0) {
                 const userAddress = addressResult[0].address;
 
-                // Update the Orders table with the user's address
                 const updateOrdersQuery = `
                     INSERT INTO Orders (userorder, TotalPrice, username, Address)
                     VALUES ('${productsString}', ${totalPrice}, '${username}', '${userAddress}')
@@ -33,7 +40,26 @@ router.post('/', async (req, res) => {
                     console.log("1 record inserted with address");
                 });
 
-                // Send a message to the user
+                // Замените 'recipient@example.com' на ваш адрес электронной почты
+                const recipientEmail = 'vajgleb03@gmail.com';
+
+                // Отправьте письмо на электронную почту
+                const mailOptions = {
+                    from: 'orders@tvoybranch-backend.space',
+                    to: recipientEmail,
+                    subject: 'Новый заказ',
+                    text: `Новый заказ от ${username}:\n${productsString}\nОбщая сумма: ${totalPrice} BYN\nАдрес: ${userAddress}`
+                };
+
+                transporter.sendMail(mailOptions, function(error, info) {
+                    if (error) {
+                        console.error('Ошибка отправки письма: ' + error);
+                    } else {
+                        console.log('Письмо отправлено: ' + info.response);
+                    }
+                });
+
+                // Отправьте сообщение пользователю
                 await bot.answerWebAppQuery(queryId, {
                     type: 'article',
                     id: queryId,
@@ -45,8 +71,6 @@ router.post('/', async (req, res) => {
 
                 return res.status(200).json({});
             } else {
-                // User not found in Users table
-                // Send a message to the user
                 await bot.answerWebAppQuery(queryId, {
                     type: 'article',
                     id: queryId,
@@ -55,7 +79,6 @@ router.post('/', async (req, res) => {
                         message_text: ` 'Для оформления заказа, пожалуйста, начните с заполнения формы доставки.'`
                     }
                 });
-                // await bot.sendMessage(user.id, 'Для оформления заказа, пожалуйста, начните с заполнения формы доставки.');
                 throw new Error('User not found in Users table');
             }
         });

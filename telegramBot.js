@@ -23,7 +23,6 @@ bot.on('message', async (msg) => {
         } else {
             // Отправляем сообщение о невозможности использования веб-приложения в групповом чате
             await bot.sendMessage(chatId, 'Извините, веб-приложение можно использовать только в приватных чатах.');
-            return; // Don't proceed further in non-private chats
         }
 
         await bot.sendMessage(chatId, 'Заходи в наш интернет магазин по кнопке ниже', {

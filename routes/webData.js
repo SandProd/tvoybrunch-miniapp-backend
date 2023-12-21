@@ -1,6 +1,6 @@
 const express = require('express');
 const db = require('../db');
-const bot = require('../telegramBot');
+const { bot }  = require('../telegramBot');
 
 const router = express.Router();
 

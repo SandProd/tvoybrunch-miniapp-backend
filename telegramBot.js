@@ -39,7 +39,7 @@ bot.on('message', async (msg) => {
     }
 
     // Проверяем, что сообщение пришло из приватного чата
-    if (msg?.web_app_data?.data) {
+    if (msg?.web_app_data?.data && msg.chat.type === 'private') {
         try {
             const data = JSON.parse(msg?.web_app_data?.data);
             console.log(data);
@@ -76,9 +76,6 @@ bot.on('message', async (msg) => {
         } catch (e) {
             console.log(e);
         }
-    } else if (msg?.web_app_data?.data) {
-        // Отправляем сообщение о невозможности использования веб-приложения в групповом чате
-        await bot.sendMessage(chatId, 'Извините, веб-приложение можно использовать только в приватных чатах.');
     }
 });
 

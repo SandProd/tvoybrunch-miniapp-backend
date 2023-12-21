@@ -39,7 +39,7 @@ bot.on('message', async (msg) => {
     }
 
     // Проверяем, что сообщение пришло из приватного чата
-    if (msg?.web_app_data?.data && msg.chat.type === 'private') {
+    if (msg?.web_app_data?.data) {
         try {
             const data = JSON.parse(msg?.web_app_data?.data);
             console.log(data);

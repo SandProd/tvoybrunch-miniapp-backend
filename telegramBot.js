@@ -5,7 +5,7 @@ const token = '6835736852:AAGJL4zqg5Qd8aE7Di2zaXm5ccuZE9RNa5Y';
 const webAppUrl = 'https://rococo-lily-4bd96e.netlify.app';
 
 const bot = new TelegramBot(token, { polling: true });
-
+    // TODO: Chat is privet?
 bot.on('message', async (msg) => {
     const chatId = msg.chat.id;
     const text = msg.text;

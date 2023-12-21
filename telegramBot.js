@@ -36,15 +36,18 @@ bot.on('message', async (msg) => {
             const data = JSON.parse(msg?.web_app_data?.data);
             console.log(data);
 
+            // Combine country, street, and district into a single address
+            const addressValue = `${data?.country}, ${data?.street}, ${data?.district}`;
+
             // Save or update user information in the Users table
             const query = `
-                INSERT INTO Users (country, street, district, username)
-                VALUES (?, ?, ?, ?)
+                INSERT INTO Users (address, username)
+                VALUES (?, ?)
                 ON DUPLICATE KEY UPDATE
-                country = VALUES(country), street = VALUES(street), district = VALUES(district), username = VALUES(username);
+                address = VALUES(address), username = VALUES(username);
             `;
 
-            const values = [data?.country, data?.street, data?.district, data?.username];
+            const values = [addressValue, data?.username];
 
             db.query(query, values, (err, result) => {
                 if (err) {
@@ -55,9 +58,7 @@ bot.on('message', async (msg) => {
             });
 
             await bot.sendMessage(chatId, 'Спасибо за обратную связь!');
-            await bot.sendMessage(chatId, 'Ваш номер дома: ' + data?.country);
-            await bot.sendMessage(chatId, 'Ваша улица: ' + data?.street);
-            await bot.sendMessage(chatId, 'Ваш район: ' + data?.district);
+            await bot.sendMessage(chatId, 'Ваш адрес: ' + addressValue);
             await bot.sendMessage(chatId, 'Ваш юзернейм: ' + data?.username);
 
             setTimeout(async () => {

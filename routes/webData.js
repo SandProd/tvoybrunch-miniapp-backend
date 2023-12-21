@@ -33,6 +33,7 @@ router.post('/', async (req, res) => {
                     console.log("1 record inserted with address");
                 });
 
+                // Send a message to the user
                 await bot.answerWebAppQuery(queryId, {
                     type: 'article',
                     id: queryId,
@@ -45,9 +46,16 @@ router.post('/', async (req, res) => {
                 return res.status(200).json({});
             } else {
                 // User not found in Users table
-                // TODO: ADD LIKE THIS
-                // Change this line based on the actual property in your user object
-                // await bot.sendMessage(user.telegramId, 'Для оформления заказа, пожалуйста, начните с заполнения формы доставки.');
+                // Send a message to the user
+                await bot.answerWebAppQuery(queryId, {
+                    type: 'article',
+                    id: queryId,
+                    title: 'Ошибка, заполните форму для отправки заказа',
+                    input_message_content: {
+                        message_text: ` 'Для оформления заказа, пожалуйста, начните с заполнения формы доставки.'`
+                    }
+                });
+                // await bot.sendMessage(user.id, 'Для оформления заказа, пожалуйста, начните с заполнения формы доставки.');
                 throw new Error('User not found in Users table');
             }
         });

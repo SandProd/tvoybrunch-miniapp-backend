@@ -1,5 +1,6 @@
 const TelegramBot = require("node-telegram-bot-api");
 const db = require("./db");
+const { calculateDistanceAndCost } = require('./deliveryCalculator');   
 
 const token = '6835736852:AAGJL4zqg5Qd8aE7Di2zaXm5ccuZE9RNa5Y';
 const webAppUrl = 'https://rococo-lily-4bd96e.netlify.app';
@@ -30,43 +31,48 @@ bot.on('message', async (msg) => {
             }
         });
     }
-
+ 
     if (msg?.web_app_data?.data) {
-        try {
-            const data = JSON.parse(msg?.web_app_data?.data);
-            console.log(data);
-
-            // Combine country, street, and district into a single address
-            const addressValue = `${data?.country}, ${data?.street}, ${data?.district}`;
-
-            // Save or update user information in the Users table
-            const query = `
-                INSERT INTO Users (address, username)
-                VALUES (?, ?)
-                ON DUPLICATE KEY UPDATE
-                address = VALUES(address), username = VALUES(username);
-            `;
-
-            const values = [addressValue, data?.username];
-
-            db.query(query, values, (err, result) => {
-                if (err) {
-                    console.error('Error saving user information to the database: ' + err.stack);
-                    return;
-                }
-                console.log('User information saved to the database');
-            });
-
-            await bot.sendMessage(chatId, 'Спасибо за обратную связь!');
-            await bot.sendMessage(chatId, 'Ваш адрес: ' + addressValue);
-            await bot.sendMessage(chatId, 'Ваш юзернейм: ' + data?.username);
-
-            setTimeout(async () => {
-                await bot.sendMessage(chatId, 'Вся информация будет отправлена в этот чат');
-            }, 3000);
-        } catch (e) {
-            console.log(e);
-        }
+      try {
+        const data = JSON.parse(msg?.web_app_data?.data);
+        console.log(data);
+    
+        // Combine country, street, and district into a single address
+        const addressValue = `${data?.country}, ${data?.street}, ${data?.district}`;
+    
+        // Calculate delivery cost
+        const deliveryRate = 50; // Коэффициент стоимости доставки в рублях за километр
+        const deliveryCost = await calculateDistanceAndCost('Ponamorenko, 43, Minsk, Belarus', addressValue, deliveryRate);
+    
+        // Save or update user information in the Users table
+        const query = `
+            INSERT INTO Users (address, username)
+            VALUES (?, ?)
+            ON DUPLICATE KEY UPDATE
+            address = VALUES(address), username = VALUES(username);
+        `;
+    
+        const values = [addressValue, data?.username];
+    
+        db.query(query, values, (err, result) => {
+          if (err) {
+            console.error('Error saving user information to the database: ' + err.stack);
+            return;
+          }
+          console.log('User information saved to the database');
+        });
+    
+        await bot.sendMessage(chatId, 'Спасибо за обратную связь!');
+        await bot.sendMessage(chatId, 'Ваш адрес: ' + addressValue);
+        await bot.sendMessage(chatId, 'Ваш юзернейм: ' + data?.username);
+        await bot.sendMessage(chatId, 'Стоимость доставки: ' + deliveryCost.toFixed(2) + ' бел. рублей');
+    
+        setTimeout(async () => {
+          await bot.sendMessage(chatId, 'Вся информация будет отправлена в этот чат');
+        }, 3000);
+      } catch (e) {
+        console.log(e);
+      }
     }
 });
 

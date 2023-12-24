@@ -98,8 +98,8 @@ router.post('/', async (req, res) => {
 
 async function dbQuery(query, values) {
     try {
-        const [rows, fields] = await db.execute(query, values);
-        return rows;
+        const result = await db.execute(query, values);
+        return result[0];
     } catch (err) {
         logger.error(`Ошибка выполнения запроса к базе данных: ${err}`);
         throw err;

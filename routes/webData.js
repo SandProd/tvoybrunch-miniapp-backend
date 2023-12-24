@@ -65,7 +65,7 @@ router.post('/', async (req, res) => {
             }
         });
     } catch (e) {
-        logger.info(e);
+        logger.error('Произошла ошибка при обработке запроса к серверу:', e);
         return res.status(500).json({});
     }
 });

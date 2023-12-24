@@ -1,20 +1,9 @@
 const express = require('express');
 const db = require('../db');
 const { bot } = require('../telegramBot');
-const nodemailer = require('nodemailer');
+const { transporter, sendEmail } = require('../mail');
 
 const router = express.Router();
-
-// Создайте объект транспорта для отправки писем
-const transporter = nodemailer.createTransport({
-    host: 'mail.adm.tools',
-    port: 25,  // Используйте порт 25 для SMTP
-    secure: false,  // Установите в false, так как это порт без SSL
-    auth: {
-        user: 'orders@tvoybranch-backend.space', // Ваш электронный адрес
-        pass: 'u55G3f5iCE' // Ваш пароль от электронной почты
-    }
-});
 
 router.post('/', async (req, res) => {
     const { queryId, products = [], totalPrice, user } = req.body;
@@ -40,18 +29,10 @@ router.post('/', async (req, res) => {
                     console.log("1 record inserted with address");
                 });
 
-                // Замените 'recipient@example.com' на ваш адрес электронной почты
                 const recipientEmail = 'vajgleb03@gmail.com';
 
-                // Отправьте письмо на электронную почту
-                const mailOptions = {
-                    from: 'orders@tvoybranch-backend.space',
-                    to: recipientEmail,
-                    subject: 'Новый заказ',
-                    text: `Новый заказ от ${username}:\n${productsString}\nОбщая сумма: ${totalPrice} BYN\nАдрес: ${userAddress}`
-                };
-
-                transporter.sendMail(mailOptions, function(error, info) {
+                // Send email using the function from mail.js
+                sendEmail(recipientEmail, 'Новый заказ', `Новый заказ от ${username}:\n${productsString}\nОбщая сумма: ${totalPrice} BYN\nАдрес: ${userAddress}`, function (error, info) {
                     if (error) {
                         console.error('Ошибка отправки письма: ' + error);
                     } else {
@@ -59,7 +40,7 @@ router.post('/', async (req, res) => {
                     }
                 });
 
-                // Отправьте сообщение пользователю
+                // Send message to the user
                 await bot.answerWebAppQuery(queryId, {
                     type: 'article',
                     id: queryId,

@@ -3,8 +3,7 @@ const cors = require('cors');
 const db = require('./db');
 const productsRouter = require('./routes/products');
 const webDataRouter = require('./routes/webData');
-const logger = require('./logger');  // Import the logger module
-const config = require('./config');
+const logger = require('./logger');
 
 const app = express();
 app.use(express.static('public'));
@@ -22,11 +21,14 @@ app.use('/products', productsRouter);
 app.use('/web-data', webDataRouter);
 
 // Server listening
-app.listen(config.PORT, config.HOSTNAME, () => {
-    logger.info(`Server started on ${config.HOSTNAME}:${config.PORT}`);
+const PORT = process.env.PORT || 3000;
+const HOSTNAME = process.env.HOSTNAME || '127.1.1.141';
+
+app.listen(PORT, HOSTNAME, () => {
+    logger.info(`Server started on ${HOSTNAME}:${PORT}`);
 });
 
-// Обработчик ошибок Express
+// Error handler middleware
 app.use((err, req, res, next) => {
     logger.error(err.stack);
     res.status(500).json({ error: 'Internal Server Error' });

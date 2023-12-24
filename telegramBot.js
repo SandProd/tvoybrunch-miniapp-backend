@@ -6,7 +6,7 @@ const token = '6835736852:AAGJL4zqg5Qd8aE7Di2zaXm5ccuZE9RNa5Y';
 const webAppUrl = 'https://rococo-lily-4bd96e.netlify.app';
 
 const bot = new TelegramBot(token, { polling: true });
-    // TODO: Chat is privet?
+
 bot.on('message', async (msg) => {
     const chatId = msg.chat.id;
     const text = msg.text;
@@ -16,7 +16,7 @@ bot.on('message', async (msg) => {
             await bot.sendMessage(chatId, 'Ниже появится кнопка, заполни форму ', {
                 reply_markup: {
                     keyboard: [
-                        [{ text: 'Адресс доставки', web_app: { url: `${webAppUrl}/form` } }]
+                        [{ text: 'Адрес доставки', web_app: { url: `${webAppUrl}/form` } }]
                     ]
                 }
             });
@@ -55,10 +55,10 @@ bot.on('message', async (msg) => {
             const values = [addressValue, data?.username];
 
             try {
-                await db.execute(query, values);
+                await dbQuery(query, values);
                 logger.info('User information saved to the database');
             } catch (error) {
-                logger.error('Error saving user information to the database:', error);
+                logger.error('Error processing database query:', error);
                 await bot.sendMessage(chatId, 'Извините, произошла ошибка при сохранении информации о пользователе.');
                 return;
             }
@@ -77,3 +77,13 @@ bot.on('message', async (msg) => {
 });
 
 module.exports = { bot };
+
+async function dbQuery(query, values) {
+    try {
+        const [rows, fields] = await db.execute(query, values);
+        return rows;
+    } catch (err) {
+        logger.error(`Ошибка выполнения запроса к базе данных: ${err}`);
+        throw err;
+    }
+}

@@ -2,7 +2,7 @@ const express = require('express');
 const db = require('../db');
 const { bot } = require('../telegramBot');
 const logger = require('../logger');
-const { transporter, sendEmail } = require('../mail');
+const { sendEmail } = require('../mail');
 const timeCheck = require('../timeCheck');
 
 const router = express.Router();
@@ -37,21 +37,15 @@ router.post('/', async (req, res) => {
 
                 const updateOrdersQuery = `
                     INSERT INTO Orders (userorder, TotalPrice, username, Address)
-                    VALUES ('${productsString}', ${totalPrice}, '${username}', '${userAddress}')
+                    VALUES (?, ?, ?, ?)
                 `;
 
                 try {
-                    const result = await dbQuery(updateOrdersQuery);
-                    logger.info(`Rows affected by the order update: ${result.affectedRows}`);
-                    logger.info(`ID of the last inserted order: ${result.insertId}`);
+                    const [result] = await dbQuery(updateOrdersQuery, [productsString, totalPrice, username, userAddress]);
+                    logger.info(`Строки, затронутые обновлением заказа: ${result.affectedRows}`);
+                    logger.info(`ID последнего вставленного заказа: ${result.insertId}`);
+                    logger.info('Заказ успешно вставлен в базу данных');
 
-                    if (result.affectedRows === 1 && result.insertId) {
-                        logger.info(`Order successfully inserted into the database (${username})`);
-                    } else {
-                        logger.error(`Failed to insert order into the database (${username})`);
-                        return res.status(500).json({ error: 'Failed to insert order into the database' });
-                    }
-                    
                     const recipientEmail = 'vajgleb03@gmail.com';
 
                     // Send email using the function from mail.js
@@ -62,7 +56,7 @@ router.post('/', async (req, res) => {
                             logger.info(`Письмо успешно отправлено (${username}): ${info.response}`);
                         }
                     });
-                    
+
                     // Send message to the user
                     await bot.answerWebAppQuery(queryId, {
                         type: 'article',
@@ -74,11 +68,11 @@ router.post('/', async (req, res) => {
                     });
 
                     logger.info(`Успешный ответ на запрос для пользователя: ${username}`);
-                    
+
                     return res.status(200).json({});
                 } catch (updateErr) {
-                    logger.error(`Error updating order (${username}): ${updateErr}`);
-                    return res.status(500).json({ error: 'Error updating order' });
+                    logger.error(`Ошибка выполнения запроса на обновление заказа (${username}): ${updateErr}`);
+                    return res.status(500).json({ error: 'Ошибка при обновлении заказа' });
                 }
             } else {
                 await bot.answerWebAppQuery(queryId, {
@@ -102,12 +96,12 @@ router.post('/', async (req, res) => {
     }
 });
 
-async function dbQuery(query) {
+async function dbQuery(query, values) {
     try {
-        const [rows, fields] = await db.execute(query);
+        const [rows, fields] = await db.execute(query, values);
         return rows;
     } catch (err) {
-        logger.error(`Ошибка при выполнении запроса к базе данных: ${err}`);
+        logger.error(`Ошибка выполнения запроса к базе данных: ${err}`);
         throw err;
     }
 }

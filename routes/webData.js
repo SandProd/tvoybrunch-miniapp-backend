@@ -1,6 +1,7 @@
 const express = require('express');
 const db = require('../db');
 const { bot } = require('../telegramBot');
+const logger = require('../logger');
 const { transporter, sendEmail } = require('../mail');
 
 const router = express.Router();
@@ -26,7 +27,7 @@ router.post('/', async (req, res) => {
 
                 db.query(updateOrdersQuery, (updateErr, result) => {
                     if (updateErr) throw updateErr;
-                    console.log("1 record inserted with address");
+                    logger.info("1 record inserted with address");
                 });
 
                 const recipientEmail = 'vajgleb03@gmail.com';
@@ -34,7 +35,7 @@ router.post('/', async (req, res) => {
                 // Send email using the function from mail.js
                 sendEmail(recipientEmail, 'Новый заказ', `Новый заказ от ${username}:\n${productsString}\nОбщая сумма: ${totalPrice} BYN\nАдрес: ${userAddress}`, function (error, info) {
                     if (error) {
-                        console.error('Ошибка отправки письма: ' + error);
+                        logger.error('Ошибка отправки письма:', error);
                     } else {
                         console.log('Письмо отправлено: ' + info.response);
                     }
@@ -64,7 +65,7 @@ router.post('/', async (req, res) => {
             }
         });
     } catch (e) {
-        console.log(e);
+        logger.info(e);
         return res.status(500).json({});
     }
 });

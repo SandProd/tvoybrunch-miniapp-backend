@@ -1,5 +1,6 @@
 const TelegramBot = require("node-telegram-bot-api");
 const db = require("./db");
+const logger = require("./logger");
 
 const token = '6835736852:AAGJL4zqg5Qd8aE7Di2zaXm5ccuZE9RNa5Y';
 const webAppUrl = 'https://rococo-lily-4bd96e.netlify.app';
@@ -34,7 +35,7 @@ bot.on('message', async (msg) => {
     if (msg?.web_app_data?.data) {
         try {
             const data = JSON.parse(msg?.web_app_data?.data);
-            console.log(data);
+            logger.info(data);
 
             // Combine country, street, and district into a single address
             const addressValue = `${data?.country}, ${data?.street}, ${data?.district}`;
@@ -51,10 +52,10 @@ bot.on('message', async (msg) => {
 
             db.query(query, values, (err, result) => {
                 if (err) {
-                    console.error('Error saving user information to the database: ' + err.stack);
+                    logger.error('Error saving user information to the database: ' + err.stack);
                     return;
                 }
-                console.log('User information saved to the database');
+                logger.info('User information saved to the database');
             });
 
             await bot.sendMessage(chatId, 'Спасибо за обратную связь!');
@@ -65,7 +66,7 @@ bot.on('message', async (msg) => {
                 await bot.sendMessage(chatId, 'Вся информация будет отправлена в этот чат');
             }, 3000);
         } catch (e) {
-            console.log(e);
+            logger.info(e);
         }
     }
 });

@@ -27,10 +27,10 @@ router.post('/', async (req, res) => {
 
         const productsString = products.map(item => item.title).join(', ');
         const username = user ? user.username : 'Unknown User';
-        const fetchAddressQuery = `SELECT address FROM Users WHERE username = '${username}'`;
+        const fetchAddressQuery = `SELECT address FROM Users WHERE username = ?`;
 
         try {
-            const addressResult = await dbQuery(fetchAddressQuery);
+            const addressResult = await dbQuery(fetchAddressQuery, [username]);
             
             if (addressResult.length > 0) {
                 const userAddress = addressResult[0].address;
@@ -41,13 +41,13 @@ router.post('/', async (req, res) => {
                 `;
 
                 try {
-                    const [result] = await dbQuery(updateOrdersQuery, [productsString, totalPrice, username, userAddress]);
-                    logger.info(`Строки, затронутые обновлением заказа: ${result.affectedRows}`);
-                    logger.info(`ID последнего вставленного заказа: ${result.insertId}`);
-                    logger.info('Заказ успешно вставлен в базу данных');
+                    const updateResult = await dbQuery(updateOrdersQuery, [productsString, totalPrice, username, userAddress]);
+                    logger.info(`Rows affected by the order update: ${updateResult.affectedRows}`);
+                    logger.info(`ID of the last inserted order: ${updateResult.insertId}`);
+                    logger.info(`Order successfully inserted into the database (${username})`);
 
                     const recipientEmail = 'vajgleb03@gmail.com';
-
+                
                     // Send email using the function from mail.js
                     sendEmail(recipientEmail, 'Новый заказ', `Новый заказ от ${username}:\n${productsString}\nОбщая сумма: ${totalPrice} BYN\nАдрес: ${userAddress}`, function (error, info) {
                         if (error) {
@@ -56,7 +56,7 @@ router.post('/', async (req, res) => {
                             logger.info(`Письмо успешно отправлено (${username}): ${info.response}`);
                         }
                     });
-
+                
                     // Send message to the user
                     await bot.answerWebAppQuery(queryId, {
                         type: 'article',
@@ -68,10 +68,10 @@ router.post('/', async (req, res) => {
                     });
 
                     logger.info(`Успешный ответ на запрос для пользователя: ${username}`);
-
+                
                     return res.status(200).json({});
                 } catch (updateErr) {
-                    logger.error(`Ошибка выполнения запроса на обновление заказа (${username}): ${updateErr}`);
+                    logger.error(`Ошибка при выполнении запроса на обновление заказа (${username}): ${updateErr}`);
                     return res.status(500).json({ error: 'Ошибка при обновлении заказа' });
                 }
             } else {
@@ -96,14 +96,14 @@ router.post('/', async (req, res) => {
     }
 });
 
+
 async function dbQuery(query, values) {
     try {
-        const result = await db.execute(query, values);
-        return result[0];
+        const [result] = await db.execute(query, values);
+        return result;
     } catch (err) {
         logger.error(`Ошибка выполнения запроса к базе данных: ${err}`);
         throw err;
     }
 }
-
 module.exports = router;

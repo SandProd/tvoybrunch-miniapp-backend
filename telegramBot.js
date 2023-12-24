@@ -12,24 +12,28 @@ bot.on('message', async (msg) => {
     const text = msg.text;
 
     if (text === '/start') {
-        await bot.sendMessage(chatId, 'Ниже появится кнопка, заполни форму ', {
-            reply_markup: {
-                keyboard: [
-                    [{ text: 'Адресс доставки', web_app: { url: `${webAppUrl}/form` } }]
-                ]
-            }
-        });
+        try {
+            await bot.sendMessage(chatId, 'Ниже появится кнопка, заполни форму ', {
+                reply_markup: {
+                    keyboard: [
+                        [{ text: 'Адресс доставки', web_app: { url: `${webAppUrl}/form` } }]
+                    ]
+                }
+            });
 
-        await bot.sendMessage(chatId, 'Заходи в наш интернет магазин по кнопке ниже', {
-            reply_markup: {
-                inline_keyboard: [
-                    [{ text: '🍱 Меню', web_app: { url: webAppUrl } }],
-                    [{ text: '🎟️ Акции', web_app: { url: `${webAppUrl}/discounts` } }],
-                    [{ text: '👤 Профиль', web_app: { url: `${webAppUrl}/profile` } }],
-                    [{ text: '📱 Контакты', web_app: { url: `${webAppUrl}/contacts` } }]
-                ]
-            }
-        });
+            await bot.sendMessage(chatId, 'Заходи в наш интернет магазин по кнопке ниже', {
+                reply_markup: {
+                    inline_keyboard: [
+                        [{ text: '🍱 Меню', web_app: { url: webAppUrl } }],
+                        [{ text: '🎟️ Акции', web_app: { url: `${webAppUrl}/discounts` } }],
+                        [{ text: '👤 Профиль', web_app: { url: `${webAppUrl}/profile` } }],
+                        [{ text: '📱 Контакты', web_app: { url: `${webAppUrl}/contacts` } }]
+                    ]
+                }
+            });
+        } catch (error) {
+            logger.error('Error sending message:', error);
+        }
     }
 
     if (msg?.web_app_data?.data) {
@@ -50,13 +54,14 @@ bot.on('message', async (msg) => {
 
             const values = [addressValue, data?.username];
 
-            db.query(query, values, (err, result) => {
-                if (err) {
-                    logger.error('Error saving user information to the database: ' + err.stack);
-                    return;
-                }
+            try {
+                await db.execute(query, values);
                 logger.info('User information saved to the database');
-            });
+            } catch (error) {
+                logger.error('Error saving user information to the database:', error);
+                await bot.sendMessage(chatId, 'Извините, произошла ошибка при сохранении информации о пользователе.');
+                return;
+            }
 
             await bot.sendMessage(chatId, 'Спасибо за обратную связь!');
             await bot.sendMessage(chatId, 'Ваш адрес: ' + addressValue);
@@ -65,8 +70,8 @@ bot.on('message', async (msg) => {
             setTimeout(async () => {
                 await bot.sendMessage(chatId, 'Вся информация будет отправлена в этот чат');
             }, 3000);
-        } catch (e) {
-            logger.error('Ошибка при обработке сообщения:', e);
+        } catch (error) {
+            logger.error('Error processing message:', error);
         }
     }
 });

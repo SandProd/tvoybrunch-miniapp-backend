@@ -11,7 +11,7 @@ router.post('/', async (req, res) => {
     try {
         const { queryId, products = [], totalPrice, user } = req.body;
 
-        // Проверяем, что текущее время находится в интервале с 10 утра до 8 вечера
+        // Check if the current time is within the accepted interval (10 AM to 8 PM)
         if (!timeCheck.isWorkingHours()) {
             await bot.answerWebAppQuery(queryId, {
                 type: 'article',
@@ -31,7 +31,7 @@ router.post('/', async (req, res) => {
 
         try {
             const addressResult = await dbQuery(fetchAddressQuery);
-            
+
             if (addressResult.length > 0) {
                 const userAddress = addressResult[0].address;
 
@@ -45,16 +45,11 @@ router.post('/', async (req, res) => {
                     logger.info(`Заказ успешно обновлен в базе данных (${username})`);
 
                     const recipientEmail = 'vajgleb03@gmail.com';
-                
+
                     // Send email using the function from mail.js
-                    sendEmail(recipientEmail, 'Новый заказ', `Новый заказ от ${username}:\n${productsString}\nОбщая сумма: ${totalPrice} BYN\nАдрес: ${userAddress}`, function (error, info) {
-                        if (error) {
-                            logger.error(`Ошибка отправки письма (${username}): ${error}`);
-                        } else {
-                            logger.info(`Письмо успешно отправлено (${username}): ${info.response}`);
-                        }
-                    });
-                
+                    await sendEmail(recipientEmail, 'Новый заказ', `Новый заказ от ${username}:\n${productsString}\nОбщая сумма: ${totalPrice} BYN\nАдрес: ${userAddress}`);
+                    logger.info(`Письмо успешно отправлено (${username})`);
+
                     // Send message to the user
                     await bot.answerWebAppQuery(queryId, {
                         type: 'article',
@@ -66,7 +61,7 @@ router.post('/', async (req, res) => {
                     });
 
                     logger.info(`Успешный ответ на запрос для пользователя: ${username}`);
-                
+
                     return res.status(200).json({});
                 } catch (updateErr) {
                     logger.error(`Ошибка при выполнении запроса на обновление заказа (${username}): ${updateErr}`);
@@ -95,16 +90,13 @@ router.post('/', async (req, res) => {
 });
 
 async function dbQuery(query) {
-    return new Promise((resolve, reject) => {
-        db.query(query, (err, result) => {
-            if (err) {
-                logger.error(`Ошибка при выполнении запроса к базе данных: ${err}`);
-                reject(err);
-            } else {
-                resolve(result);
-            }
-        });
-    });
+    try {
+        const [rows, fields] = await db.execute(query);
+        return rows;
+    } catch (err) {
+        logger.error(`Ошибка при выполнении запроса к базе данных: ${err}`);
+        throw err;
+    }
 }
 
 module.exports = router;

@@ -6,7 +6,6 @@ const options = {
 
 const geocoder = NodeGeocoder(options);
 
-// Расчет расстояния между двумя точками на поверхности Земли
 function getDistance(coord1, coord2) {
   const [lat1, lon1] = coord1;
   const [lat2, lon2] = coord2;
@@ -26,7 +25,6 @@ function getDistance(coord1, coord2) {
   return distance;
 }
 
-// Расчет расстояния и стоимости доставки
 async function calculateDistanceAndCost(origin, destination, deliveryRate) {
   try {
     const result = await geocoder.geocode(origin);
@@ -43,7 +41,8 @@ async function calculateDistanceAndCost(origin, destination, deliveryRate) {
 
     return deliveryCost;
   } catch (error) {
-    throw new Error('Ошибка при расчете стоимости доставки:', error);
+    console.error('Ошибка при расчете расстояния и стоимости доставки:', error);
+    throw error; // Пересылаем ошибку дальше
   }
 }
 

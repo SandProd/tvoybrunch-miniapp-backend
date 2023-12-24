@@ -21,8 +21,8 @@ app.use('/products', productsRouter);
 app.use('/web-data', webDataRouter);
 
 // Server listening
-const PORT = process.env.PORT || 3000;
-const HOSTNAME = process.env.HOSTNAME || '127.1.1.141';
+const PORT = 3000;
+const HOSTNAME = '127.1.1.141';
 
 app.listen(PORT, HOSTNAME, () => {
     logger.info(`Server started on ${HOSTNAME}:${PORT}`);

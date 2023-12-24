@@ -11,10 +11,15 @@ app.use(express.json());
 app.use(cors());
 
 // Database connection
-db.connect((err) => {
-    if (err) throw err;
-    logger.info("Connected to the database");
-});
+(async () => {
+    try {
+        await db;
+        logger.info("Connected to the database");
+    } catch (err) {
+        logger.error("Error connecting to the database:", err);
+        process.exit(1);
+    }
+})();
 
 // Routes
 app.use('/products', productsRouter);

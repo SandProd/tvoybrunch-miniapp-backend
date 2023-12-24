@@ -16,7 +16,8 @@ bot.on('message', async (msg) => {
             await bot.sendMessage(chatId, 'Ниже появится кнопка, заполни форму ', {
                 reply_markup: {
                     keyboard: [
-                        [{ text: 'Адрес доставки', web_app: { url: `${webAppUrl}/form` } }]
+                        [{ text: 'Адрес доставки', web_app: { url: `${webAppUrl}/form` } }],
+                        [{ text: '🤝 Пригласить друга' }]
                     ]
                 }
             });
@@ -33,6 +34,19 @@ bot.on('message', async (msg) => {
             });
         } catch (error) {
             logger.error('Error sending message:', error);
+        }
+    }
+
+    if (msg.text === '🤝 Пригласить друга') {
+        try {
+            // Генерируем ссылку на приглашение
+            const inviteLink = `https://t.me/${bot.options.username}?start=${chatId}`;
+            
+            // Отправляем ссылку в ответ на нажатие кнопки
+            await bot.sendMessage(chatId, `Пригласите друга, отправив ему эту ссылку:\n${inviteLink}`);
+        } catch (error) {
+            logger.error('Error inviting a friend:', error);
+            await bot.sendMessage(chatId, 'Произошла ошибка при приглашении друга.');
         }
     }
 
@@ -76,8 +90,6 @@ bot.on('message', async (msg) => {
     }
 });
 
-module.exports = { bot };
-
 async function dbQuery(query, values) {
     try {
         const [rows, fields] = await db.execute(query, values);
@@ -87,3 +99,5 @@ async function dbQuery(query, values) {
         throw err;
     }
 }
+
+module.exports = { bot };

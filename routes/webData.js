@@ -11,7 +11,7 @@ router.post('/', async (req, res) => {
     try {
         const { queryId, products = [], totalPrice, user } = req.body;
 
-        // Check if the current time is within the accepted interval (10 AM to 8 PM)
+        // Проверяем, что текущее время находится в интервале с 10 утра до 8 вечера
         if (!timeCheck.isWorkingHours()) {
             await bot.answerWebAppQuery(queryId, {
                 type: 'article',
@@ -31,7 +31,7 @@ router.post('/', async (req, res) => {
 
         try {
             const addressResult = await dbQuery(fetchAddressQuery);
-
+            
             if (addressResult.length > 0) {
                 const userAddress = addressResult[0].address;
 
@@ -41,15 +41,28 @@ router.post('/', async (req, res) => {
                 `;
 
                 try {
-                    await dbQuery(updateOrdersQuery);
-                    logger.info(`Заказ успешно обновлен в базе данных (${username})`);
+                    const result = await dbQuery(updateOrdersQuery);
+                    logger.info(`Rows affected by the order update: ${result.affectedRows}`);
+                    logger.info(`ID of the last inserted order: ${result.insertId}`);
 
+                    if (result.affectedRows === 1 && result.insertId) {
+                        logger.info(`Order successfully inserted into the database (${username})`);
+                    } else {
+                        logger.error(`Failed to insert order into the database (${username})`);
+                        return res.status(500).json({ error: 'Failed to insert order into the database' });
+                    }
+                    
                     const recipientEmail = 'vajgleb03@gmail.com';
 
                     // Send email using the function from mail.js
-                    await sendEmail(recipientEmail, 'Новый заказ', `Новый заказ от ${username}:\n${productsString}\nОбщая сумма: ${totalPrice} BYN\nАдрес: ${userAddress}`);
-                    logger.info(`Письмо успешно отправлено (${username})`);
-
+                    sendEmail(recipientEmail, 'Новый заказ', `Новый заказ от ${username}:\n${productsString}\nОбщая сумма: ${totalPrice} BYN\nАдрес: ${userAddress}`, function (error, info) {
+                        if (error) {
+                            logger.error(`Ошибка отправки письма (${username}): ${error}`);
+                        } else {
+                            logger.info(`Письмо успешно отправлено (${username}): ${info.response}`);
+                        }
+                    });
+                    
                     // Send message to the user
                     await bot.answerWebAppQuery(queryId, {
                         type: 'article',
@@ -61,11 +74,11 @@ router.post('/', async (req, res) => {
                     });
 
                     logger.info(`Успешный ответ на запрос для пользователя: ${username}`);
-
+                    
                     return res.status(200).json({});
                 } catch (updateErr) {
-                    logger.error(`Ошибка при выполнении запроса на обновление заказа (${username}): ${updateErr}`);
-                    return res.status(500).json({ error: 'Ошибка при обновлении заказа' });
+                    logger.error(`Error updating order (${username}): ${updateErr}`);
+                    return res.status(500).json({ error: 'Error updating order' });
                 }
             } else {
                 await bot.answerWebAppQuery(queryId, {

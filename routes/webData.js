@@ -23,15 +23,17 @@ router.post('/', async (req, res) => {
             });
             return res.status(200).json({});
         }
-        try {
-        
+
         const productsString = products.map(item => item.title).join(', ');
         const username = user ? user.username : 'Unknown User';
         const fetchAddressQuery = `SELECT address FROM Users WHERE username = '${username}'`;
 
-        
+        try {
             db.query(fetchAddressQuery, async (err, addressResult) => {
-                if (err) throw err;
+                if (err) {
+                    logger.error(`Ошибка при выполнении запроса на получение адреса пользователя (${username}): ${err}`);
+                    return res.status(500).json({});
+                }
 
                 if (addressResult.length > 0) {
                     const userAddress = addressResult[0].address;
@@ -43,8 +45,11 @@ router.post('/', async (req, res) => {
 
                     try {
                         db.query(updateOrdersQuery, (updateErr, result) => {
-                            if (updateErr) throw updateErr;
-                            logger.info("1 record inserted with address");
+                            if (updateErr) {
+                                logger.error(`Ошибка при выполнении запроса на обновление заказа (${username}): ${updateErr}`);
+                            } else {
+                                logger.info(`1 record inserted with address (${username})`);
+                            }
                         });
 
                         const recipientEmail = 'vajgleb03@gmail.com';
@@ -52,9 +57,9 @@ router.post('/', async (req, res) => {
                         // Send email using the function from mail.js
                         sendEmail(recipientEmail, 'Новый заказ', `Новый заказ от ${username}:\n${productsString}\nОбщая сумма: ${totalPrice} BYN\nАдрес: ${userAddress}`, function (error, info) {
                             if (error) {
-                                logger.error('Ошибка отправки письма:', error);
+                                logger.error(`Ошибка отправки письма (${username}): ${error}`);
                             } else {
-                                logger.info('Письмо отправлено:', info.response);
+                                logger.info(`Письмо отправлено (${username}): ${info.response}`);
                             }
                         });
 
@@ -70,8 +75,8 @@ router.post('/', async (req, res) => {
 
                         return res.status(200).json({});
                     } catch (updateErr) {
-                        logger.error('Ошибка при выполнении запроса на обновление заказа:', updateErr);
-                        throw updateErr;
+                        logger.error(`Ошибка при выполнении запроса на обновление заказа (${username}): ${updateErr}`);
+                        return res.status(500).json({});
                     }
                 } else {
                     await bot.answerWebAppQuery(queryId, {
@@ -82,15 +87,16 @@ router.post('/', async (req, res) => {
                             message_text: ` 'Для оформления заказа, пожалуйста, начните с заполнения формы доставки.'`
                         }
                     });
+                    logger.error(`Пользователь не найден в таблице Users (${username})`);
                     throw new Error('User not found in Users table');
                 }
             });
         } catch (e) {
-            logger.error('Произошла ошибка при выполнении запроса:', e);
+            logger.error(`Произошла ошибка при выполнении запроса (${username}): ${e}`);
             return res.status(500).json({});
         }
     } catch (e) {
-        logger.error('Произошла ошибка при обработке запроса к серверу:', e);
+        logger.error(`Произошла ошибка при обработке запроса к серверу (${username}): ${e}`);
         return res.status(500).json({});
     }
 });

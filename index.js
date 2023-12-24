@@ -25,7 +25,13 @@ app.use('/products', productsRouter);
 // WebData route
 app.use('/web-data', webDataRouter);
 
+// Обработчик ошибок Express
+app.use((err, req, res, next) => {
+    logger.error(err.stack);
+    res.status(500).json({ error: 'Internal Server Error' });
+});
+
 // Server listening
 app.listen(PORT, HOSTNAME, () => {
-    console.log(`Server started on ${HOSTNAME}:${PORT}`);
+    logger.info(`Server started on ${HOSTNAME}:${PORT}`);
 });

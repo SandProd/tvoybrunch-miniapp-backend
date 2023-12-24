@@ -21,7 +21,13 @@ const sendEmail = (recipientEmail, subject, text, callback) => {
     };
 
     transporter.sendMail(mailOptions, function (error, info) {
-        callback(error, info);
+        if (error) {
+            logger.error('Ошибка отправки письма:', error);
+            callback(error, info);
+        } else {
+            logger.info('Письмо отправлено:', info.response);
+            callback(null, info);
+        }
     });
 };
 

@@ -66,7 +66,7 @@ bot.on('message', async (msg) => {
                 await bot.sendMessage(chatId, 'Вся информация будет отправлена в этот чат');
             }, 3000);
         } catch (e) {
-            logger.info(e);
+            logger.error('Ошибка при обработке сообщения:', e);
         }
     }
 });

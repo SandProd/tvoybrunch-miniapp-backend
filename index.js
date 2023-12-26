@@ -1,9 +1,9 @@
 const express = require('express');
 const cors = require('cors');
-const db = require('./db');
+const db = require('./configs/db');
 const productsRouter = require('./routes/products');
 const webDataRouter = require('./routes/webData');
-const logger = require('./logger');
+const logger = require('./configs/logger');
 
 const app = express();
 app.use(express.static('public'));

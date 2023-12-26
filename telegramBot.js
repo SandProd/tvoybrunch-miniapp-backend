@@ -1,40 +1,59 @@
 const TelegramBot = require("node-telegram-bot-api");
-const db = require("./db");
+const db = require("./configs/db");
+const logger = require("./configs/logger");
 
 const token = '6835736852:AAGJL4zqg5Qd8aE7Di2zaXm5ccuZE9RNa5Y';
 const webAppUrl = 'https://rococo-lily-4bd96e.netlify.app';
 
 const bot = new TelegramBot(token, { polling: true });
-    // TODO: Chat is privet?
+
 bot.on('message', async (msg) => {
     const chatId = msg.chat.id;
     const text = msg.text;
 
     if (text === '/start') {
-        await bot.sendMessage(chatId, 'Ниже появится кнопка, заполни форму ', {
-            reply_markup: {
-                keyboard: [
-                    [{ text: 'Адресс доставки', web_app: { url: `${webAppUrl}/form` } }]
-                ]
-            }
-        });
+        try {
+            await bot.sendMessage(chatId, 'Ниже появится кнопка, заполни форму ', {
+                reply_markup: {
+                    keyboard: [
+                        [{ text: 'Адрес доставки', web_app: { url: `${webAppUrl}/form` } }],
+                        [{ text: '🤝 Пригласить друга' }]
+                    ]
+                }
+            });
 
-        await bot.sendMessage(chatId, 'Заходи в наш интернет магазин по кнопке ниже', {
-            reply_markup: {
-                inline_keyboard: [
-                    [{ text: '🍱 Меню', web_app: { url: webAppUrl } }],
-                    [{ text: '🎟️ Акции', web_app: { url: `${webAppUrl}/discounts` } }],
-                    [{ text: '👤 Профиль', web_app: { url: `${webAppUrl}/profile` } }],
-                    [{ text: '📱 Контакты', web_app: { url: `${webAppUrl}/contacts` } }]
-                ]
-            }
-        });
+            await bot.sendMessage(chatId, 'Заходи в наш интернет магазин по кнопке ниже', {
+                reply_markup: {
+                    inline_keyboard: [
+                        [{ text: '🍱 Меню', web_app: { url: webAppUrl } }],
+                        [{ text: '🎟️ Акции', web_app: { url: `${webAppUrl}/discounts` } }],
+                        [{ text: '👤 Профиль', web_app: { url: `${webAppUrl}/profile` } }],
+                        [{ text: '📱 Контакты', web_app: { url: `${webAppUrl}/contacts` } }]
+                    ]
+                }
+            });
+        } catch (error) {
+            logger.error('Error sending message:', error);
+        }
+    }
+
+    if (msg.text === '🤝 Пригласить друга') {
+        try {
+            // Генерируем ссылку на приглашение
+            const inviteLink = `https://t.me/tvoybrunch_minibot?start=${chatId}`;
+            
+            // Отправляем ссылку в ответ на нажатие кнопки
+            await bot.sendMessage(chatId, `Пригласите друга, отправив ему эту ссылку:\n${inviteLink}`);
+        } catch (error) {
+            logger.error('Error inviting a friend:', error);
+            await bot.sendMessage(chatId, 'Произошла ошибка при приглашении друга.');
+        }
     }
 
     if (msg?.web_app_data?.data) {
         try {
             const data = JSON.parse(msg?.web_app_data?.data);
-            console.log(data);
+            logger.info(data);
 
             // Combine country, street, and district into a single address
             const addressValue = `${data?.country}, ${data?.street}, ${data?.district}`;
@@ -49,13 +68,14 @@ bot.on('message', async (msg) => {
 
             const values = [addressValue, data?.username];
 
-            db.query(query, values, (err, result) => {
-                if (err) {
-                    console.error('Error saving user information to the database: ' + err.stack);
-                    return;
-                }
-                console.log('User information saved to the database');
-            });
+            try {
+                await dbQuery(query, values);
+                logger.info('User information saved to the database');
+            } catch (error) {
+                logger.error('Error processing database query:', error);
+                await bot.sendMessage(chatId, 'Извините, произошла ошибка при сохранении информации о пользователе.');
+                return;
+            }
 
             await bot.sendMessage(chatId, 'Спасибо за обратную связь!');
             await bot.sendMessage(chatId, 'Ваш адрес: ' + addressValue);
@@ -64,10 +84,20 @@ bot.on('message', async (msg) => {
             setTimeout(async () => {
                 await bot.sendMessage(chatId, 'Вся информация будет отправлена в этот чат');
             }, 3000);
-        } catch (e) {
-            console.log(e);
+        } catch (error) {
+            logger.error('Error processing message:', error);
         }
     }
 });
+
+async function dbQuery(query, values) {
+    try {
+        const [rows, fields] = await db.execute(query, values);
+        return rows;
+    } catch (err) {
+        logger.error(`Ошибка выполнения запроса к базе данных: ${err}`);
+        throw err;
+    }
+}
 
 module.exports = { bot };

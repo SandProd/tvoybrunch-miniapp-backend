@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const connection = require('../db');
+const connection = require('../configs/db');
 
 // Добавление нового продукта
 router.post('/', (req, res) => {

@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node ./index.js --port=3000 --hostname=127.1.1.141"
+    "start": "node ./index.js"
   },
   "keywords": [],
   "author": "",

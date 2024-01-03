@@ -1,9 +1,9 @@
 const express = require('express');
-const db = require('../db');
+const db = require('../configs/db');
 const { bot } = require('../telegramBot');
-const logger = require('../logger');
-const { sendEmail } = require('../mail');
-const timeCheck = require('../timeCheck');
+const logger = require('../configs/logger');
+const { sendEmail } = require('../configs/mail');
+const timeCheck = require('../utils/timeCheck');
 
 const router = express.Router();
 

@@ -1,6 +1,6 @@
 const TelegramBot = require("node-telegram-bot-api");
-const db = require("./db");
-const logger = require("./logger");
+const db = require("./configs/db");
+const logger = require("./configs/logger");
 
 const token = '6835736852:AAGJL4zqg5Qd8aE7Di2zaXm5ccuZE9RNa5Y';
 const webAppUrl = 'https://rococo-lily-4bd96e.netlify.app';
